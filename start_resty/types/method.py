@@ -1,7 +1,7 @@
 import abc
 import inspect
 from functools import wraps
-from typing import Callable, ClassVar, Mapping, Type, Union
+from typing import Any, Callable, ClassVar, List, Sequence, Tuple, Type, Union
 
 from marshmallow import Schema
 from starlette.requests import Request
@@ -11,15 +11,27 @@ from start_resty.operation import Operation
 from start_resty.serializers import JsonSerializer, Serializer
 from .parser import Parser
 
-__all__ = ('Method', 'endpoint')
+__all__ = ('Method', 'endpoint', 'MethodMetaOptions', 'RequestParser')
 
 
-class ArgsParser:
+class RequestParser:
     __slots__ = ('parsers', 'async_parsers')
 
     def __init__(self):
-        self.parsers = []
-        self.async_parsers = []
+        self.parsers: List[Tuple[str, Parser]] = []
+        self.async_parsers: List[Tuple[str, Parser]] = []
+
+    def iter_parsers(self):
+        yield from (p[1] for p in self.parsers)
+        yield from (p[1] for p in self.async_parsers)
+
+
+class MethodMetaOptions:
+    __slots__ = ('parser', 'render')
+
+    def __init__(self, request_parser: RequestParser, render: Callable):
+        self.parser = request_parser
+        self.render = render
 
 
 class MethodMeta(abc.ABCMeta):
@@ -28,14 +40,13 @@ class MethodMeta(abc.ABCMeta):
         cls = super().__new__(mcs, name, bases, attrs, **kwargs)
 
         func = getattr(cls, 'execute', None)
-        if func is not None:
-            cls.__parser__ = mcs.create_parser(func.__annotations__)
-
-        cls._render_content = staticmethod(mcs.create_renders(cls))
+        meta = MethodMetaOptions(request_parser=mcs.create_parser(func),
+                                 render=mcs.create_render(cls))
+        cls.__meta__ = meta
         return cls
 
     @classmethod
-    def create_renders(mcs, method):
+    def create_render(mcs, method):
         renders = []
         response_schema = getattr(method, 'response_schema', None)
         if response_schema is not None:
@@ -45,9 +56,13 @@ class MethodMeta(abc.ABCMeta):
             renders.append(response_schema.dump)
 
         if method.serializer is not None:
-            renders.append(mcs.render_bytes(method.serializer, method.status_code))
+            renders.append(mcs.render_bytes(method.serializer, method.status_code or 200))
 
-        def render(content):
+        return mcs.create_content_render(tuple(renders))
+
+    @staticmethod
+    def create_content_render(renders: Tuple) -> Callable:
+        def render(content: Any):
             for r in renders:
                 content = r(content)
 
@@ -56,19 +71,23 @@ class MethodMeta(abc.ABCMeta):
         return render
 
     @staticmethod
-    def create_parser(data: Mapping):
-        args = ArgsParser()
+    def create_parser(func):
+        req_parser = RequestParser()
+        if func is None:
+            return req_parser
+
+        data = func.__annotations__
         for key, value in data.items():
             parser = getattr(value, 'parser', None)
             if parser is None or not isinstance(parser, Parser):
                 continue
 
             if inspect.iscoroutinefunction(parser.parse):
-                args.async_parsers.append((key, parser))
+                req_parser.async_parsers.append((key, parser))
             else:
-                args.parsers.append((key, parser))
+                req_parser.parsers.append((key, parser))
 
-        return args
+        return req_parser
 
     @staticmethod
     def render_bytes(serializer, status_code):
@@ -82,13 +101,13 @@ class MethodMeta(abc.ABCMeta):
 
 class Method(abc.ABC, metaclass=MethodMeta):
     __slots__ = ('request',)
+    __meta__: ClassVar[MethodMetaOptions]
 
-    __parser__: ClassVar[ArgsParser]
     meta: ClassVar[Operation] = Operation(tag='default')
     serializer: ClassVar[Serializer] = JsonSerializer
     response_schema: ClassVar[Union[Schema, Type[Schema], None]] = None
-    _render_content: ClassVar[Callable]
     status_code: int = 200
+    errors: ClassVar[Sequence] = ()
 
     def __init__(self, request: Request):
         self.request = request
@@ -99,7 +118,8 @@ class Method(abc.ABC, metaclass=MethodMeta):
 
     async def dispatch(self):
         kwargs = {}
-        parser = self.__parser__
+        meta = self.__meta__
+        parser = meta.parser
         for (key, p) in parser.parsers:
             kwargs[key] = p.parse(self.request)
 
@@ -107,7 +127,7 @@ class Method(abc.ABC, metaclass=MethodMeta):
             kwargs[key] = await p.parse(self.request)
 
         content = await self.execute(**kwargs)
-        return self._render_content(content)
+        return meta.render(content)
 
     @classmethod
     def as_endpoint(cls):

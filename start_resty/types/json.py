@@ -4,7 +4,7 @@ from typing import Mapping, Type, TypeVar, Union
 from marshmallow import EXCLUDE, Schema
 from starlette.requests import Request
 
-from .parser import Parser
+from .parser import Parser, set_parser
 
 __all__ = ('json_schema', 'json_payload')
 
@@ -13,11 +13,8 @@ P = TypeVar('P')
 
 def json_schema(schema: Union[Schema, Type[Schema]], cls: P,
                 unknown: str = EXCLUDE) -> P:
-    def set_ns(ns):
-        ns['parser'] = JsonParser.create(schema, unknown=unknown)
-        return ns
-
-    return types.new_class('QueryInputParams', (cls,), exec_body=set_ns)
+    return types.new_class('QueryInputParams', (cls,),
+                           exec_body=set_parser(JsonParser.create(schema, unknown=unknown)))
 
 
 def json_payload(schema: Union[Schema, Type[Schema]], unknown=EXCLUDE) -> Type[Mapping]:
@@ -25,6 +22,14 @@ def json_payload(schema: Union[Schema, Type[Schema]], unknown=EXCLUDE) -> Type[M
 
 
 class JsonParser(Parser):
+
+    @property
+    def location(self):
+        return 'body'
+
+    @property
+    def media_type(self):
+        return 'application/json'
 
     async def parse(self, request: Request):
         body = await request.json()
