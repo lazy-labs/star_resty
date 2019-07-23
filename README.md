@@ -1,5 +1,5 @@
 # Star resty
-Object-oriented application web framework based on starlette, marshmallow and apispec.
+Object-oriented rest framework based on starlette, marshmallow and apispec.
 
 ## Requirements
 
@@ -20,8 +20,9 @@ $ pip install start_resty
 from dataclasses import dataclass
 from typing import Optional
 
-from marshmallow import Schema, fields, post_load
+from marshmallow import Schema, fields, post_load, ValidationError
 from starlette.applications import Starlette
+from starlette.responses import UJSONResponse
 
 from start_resty import Method, Operation, endpoint, json_schema, query, setup_spec
 
@@ -46,6 +47,10 @@ class PayloadSchema(Schema):
 
 
 app = Starlette(debug=True)
+
+@app.exception_handler(ValidationError)
+def register_error(request, e: ValidationError):
+    return UJSONResponse(e.normalized_messages(), status_code=400)
 
 
 @app.route('/echo')

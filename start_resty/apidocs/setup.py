@@ -153,6 +153,9 @@ def resolve_responses(endpoint: Method):
         elif inspect.isclass(e) and issubclass(e, Exception) and getattr(e, 'status_code', None) is not None:
             responses[str(getattr(e, 'status_code'))] = create_error_schema_by_exc(e)
 
+    if not endpoint.__meta__.parser.is_empty and '404' not in responses:
+        responses['400'] = {'description': 'Bad request'}
+
     return responses
 
 

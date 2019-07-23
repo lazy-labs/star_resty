@@ -21,6 +21,10 @@ class RequestParser:
         self.parsers: List[Tuple[str, Parser]] = []
         self.async_parsers: List[Tuple[str, Parser]] = []
 
+    @property
+    def is_empty(self) -> bool:
+        return not (self.parsers or self.async_parsers)
+
     def iter_parsers(self):
         yield from (p[1] for p in self.parsers)
         yield from (p[1] for p in self.async_parsers)
