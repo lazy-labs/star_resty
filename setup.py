@@ -25,7 +25,7 @@ setup(
     install_requires=[
         "ujson",
         "typing_extensions",
-        "marshmallow>=3<4",
+        "marshmallow>=3.0.0rc8,<4",
         "starlette<=1",
         "apispec<3",
     ],

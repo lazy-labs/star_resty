@@ -1,7 +1,7 @@
 import abc
 import inspect
 from functools import wraps
-from typing import Any, Callable, ClassVar, List, Sequence, Tuple, Type, Union
+from typing import Any, Callable, ClassVar, Dict, List, Sequence, Tuple, Type, Union
 
 from marshmallow import Schema
 from starlette.requests import Request
@@ -24,6 +24,16 @@ class RequestParser:
     def iter_parsers(self):
         yield from (p[1] for p in self.parsers)
         yield from (p[1] for p in self.async_parsers)
+
+    async def parse(self, request: Request) -> Dict:
+        params = {}
+        for (key, p) in self.parsers:
+            params[key] = p.parse(request)
+
+        for (key, p) in self.async_parsers:
+            params[key] = await p.parse(request)
+
+        return params
 
 
 class MethodMetaOptions:
@@ -117,16 +127,9 @@ class Method(abc.ABC, metaclass=MethodMeta):
         pass
 
     async def dispatch(self) -> Response:
-        kwargs = {}
         meta = self.__meta__
-        parser = meta.parser
-        for (key, p) in parser.parsers:
-            kwargs[key] = p.parse(self.request)
-
-        for (key, p) in parser.async_parsers:
-            kwargs[key] = await p.parse(self.request)
-
-        content = await self.execute(**kwargs)
+        params = await meta.parser.parse(self.request)
+        content = await self.execute(**params)
         return meta.render(content)
 
     @classmethod
