@@ -1,0 +1,9 @@
+ujson
+typing_extensions
+marshmallow>=3<4
+starlette<=1
+apispec<3
+
+# Testing
+pytest
+pytest-cov
