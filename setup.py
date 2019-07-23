@@ -39,7 +39,7 @@ setup(
     author_email="slv0.chr@gmail.com",
     packages=get_packages("star_resty"),
     package_data={"star_resty": ["py.typed"]},
-    data_files=[("", ["LICENSE.md"])],
+    data_files=[("", ["LICENSE"])],
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Web Environment",
