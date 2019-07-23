@@ -27,7 +27,9 @@ def test_generate_api_docs():
                 'produces': ['application/json'],
                 'responses': {'201': {'schema': {
                     '$ref': '#/definitions/tests.utils.method.CreateUserResponse'}}},
-                'tags': ['default']}}}
+                'tags': ['users'],
+                'description': 'create user'
+            }}}
 
     assert body.get('definitions') == {
         'tests.utils.method.BodySchema': {
