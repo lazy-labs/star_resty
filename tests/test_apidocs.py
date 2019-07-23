@@ -1,7 +1,7 @@
 from starlette.applications import Starlette
 from starlette.testclient import TestClient
 
-from start_resty.apidocs import setup_spec
+from star_resty.apidocs import setup_spec
 from .utils.method import CreateUser
 
 
@@ -25,8 +25,10 @@ def test_generate_api_docs():
                     {'in': 'body', 'name': 'body', 'required': False,
                      'schema': {'$ref': '#/definitions/tests.utils.method.BodySchema'}}],
                 'produces': ['application/json'],
-                'responses': {'201': {'schema': {
-                    '$ref': '#/definitions/tests.utils.method.CreateUserResponse'}}},
+                'responses': {
+                    '201': {'schema': {
+                        '$ref': '#/definitions/tests.utils.method.CreateUserResponse'}},
+                    '400': {'description': 'Bad request'}},
                 'tags': ['users'],
                 'description': 'create user'
             }}}

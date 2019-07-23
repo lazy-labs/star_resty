@@ -4,7 +4,7 @@ from typing import Mapping, Type, TypeVar, Union
 from marshmallow import EXCLUDE, Schema
 from starlette.requests import Request
 
-from start_resty.parsers import parse_query_params
+from star_resty.parsers import parse_query_params
 from .parser import Parser, set_parser
 
 __all__ = ('query', 'query_schema')

@@ -24,7 +24,7 @@ from marshmallow import Schema, fields, post_load, ValidationError
 from starlette.applications import Starlette
 from starlette.responses import UJSONResponse
 
-from start_resty import Method, Operation, endpoint, json_schema, query, setup_spec
+from star_resty import Method, Operation, endpoint, json_schema, query, setup_spec
 
 
 class EchoInput(Schema):

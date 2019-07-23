@@ -10,8 +10,8 @@ from starlette.requests import Request
 from starlette.responses import UJSONResponse
 from starlette.routing import Route
 
-from start_resty.types import Method
-from start_resty.types.method import MethodMetaOptions, RequestParser
+from star_resty.types import Method
+from star_resty.types.method import MethodMetaOptions, RequestParser
 from .utils import resolve_schema_name
 
 logger = logging.getLogger(__name__)
@@ -144,7 +144,7 @@ def resolve_responses(endpoint: Method):
             'schema': endpoint.response_schema
         }
 
-    errors = endpoint.errors or ()
+    errors = endpoint.meta.errors or ()
     for e in errors:
         if isinstance(e, dict) and e.get('status_code'):
             responses[str(e['status_code'])] = {key: val for key, val in e.items() if key != 'status_code'}

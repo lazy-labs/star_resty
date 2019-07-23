@@ -1,14 +1,14 @@
 import abc
 import inspect
 from functools import wraps
-from typing import Any, Callable, ClassVar, Dict, List, Sequence, Tuple, Type, Union
+from typing import Any, Callable, ClassVar, Dict, List, Tuple, Type, Union
 
 from marshmallow import Schema
 from starlette.requests import Request
 from starlette.responses import Response
 
-from start_resty.operation import Operation
-from start_resty.serializers import JsonSerializer, Serializer
+from star_resty.operation import Operation
+from star_resty.serializers import JsonSerializer, Serializer
 from .parser import Parser
 
 __all__ = ('Method', 'endpoint', 'MethodMetaOptions', 'RequestParser')
@@ -121,7 +121,6 @@ class Method(abc.ABC, metaclass=MethodMeta):
     serializer: ClassVar[Serializer] = JsonSerializer
     response_schema: ClassVar[Union[Schema, Type[Schema], None]] = None
     status_code: int = 200
-    errors: ClassVar[Sequence] = ()
 
     def __init__(self, request: Request):
         self.request = request

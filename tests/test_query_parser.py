@@ -5,7 +5,7 @@ from marshmallow import Schema, ValidationError, fields
 from starlette.datastructures import QueryParams
 from starlette.requests import Request
 
-from start_resty.parsers.query import parse_query_params
+from star_resty.parsers.query import parse_query_params
 
 
 class QuerySchema(Schema):

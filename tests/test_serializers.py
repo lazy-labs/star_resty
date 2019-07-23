@@ -1,4 +1,4 @@
-from start_resty.serializers import JsonSerializer
+from star_resty.serializers import JsonSerializer
 
 
 def test_serialize_json():
