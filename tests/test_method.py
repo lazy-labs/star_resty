@@ -46,12 +46,9 @@ def test_search_user_invalid_args():
 
     app.add_route('/users/{id}', SearchUser.as_endpoint(), methods=['GET'])
 
-    def register_error_handler(app: Starlette):
-        @app.exception_handler(ValidationError)
-        async def error(request, exc: ValidationError):
-            return JSONResponse({'success': False, 'result': {'message': exc.messages}}, status_code=400)
-
-    register_error_handler(app)
+    @app.exception_handler(ValidationError)
+    async def error(request, exc: ValidationError):
+        return JSONResponse({'success': False, 'result': {'message': exc.normalized_messages()}}, status_code=400)
 
     client = TestClient(app)
     resp = client.get('/users/invalid?q=Test')
