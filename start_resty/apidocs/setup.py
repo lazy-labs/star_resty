@@ -24,6 +24,7 @@ def setup_spec(app: Starlette, title: str,
                openapi_version='2.0',
                schemes=None,
                base_path='/',
+               route: str = '/apidocs.json',
                **kwargs):
     spec = APISpec(
         title=title,
@@ -35,7 +36,7 @@ def setup_spec(app: Starlette, title: str,
     )
     initialized = False
 
-    @app.route('/apidocs.json', include_in_schema=False)
+    @app.route(route, include_in_schema=False)
     def generate_api_docs(_: Request):
         nonlocal initialized
         nonlocal spec

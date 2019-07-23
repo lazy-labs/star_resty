@@ -116,7 +116,7 @@ class Method(abc.ABC, metaclass=MethodMeta):
     async def execute(self, *args, **kwargs):
         pass
 
-    async def dispatch(self):
+    async def dispatch(self) -> Response:
         kwargs = {}
         meta = self.__meta__
         parser = meta.parser
@@ -136,7 +136,7 @@ class Method(abc.ABC, metaclass=MethodMeta):
 
 def endpoint(cls: Type[Method]):
     @wraps(cls)
-    async def wrapper(request: Request):
+    async def wrapper(request: Request) -> Response:
         method = cls(request)
         return await method.dispatch()
 

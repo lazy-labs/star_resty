@@ -7,3 +7,6 @@ apispec<3
 # Testing
 pytest
 pytest-cov
+pytest-asyncio
+asynctest
+requests
