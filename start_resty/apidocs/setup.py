@@ -156,7 +156,9 @@ def resolve_responses(endpoint: Method):
 
 
 def create_error_schema_by_exc(e: Union[Exception, Type[Exception]]) -> Dict:
-    schema = {'description': getattr(e, 'description', None) or str(e)}
+    schema = {'description': (getattr(e, 'detail', None)
+                              or getattr(e, 'description', None)
+                              or str(e))}
     error_schema = getattr(e, 'schema', None)
     if error_schema is not None:
         schema['schema'] = error_schema
