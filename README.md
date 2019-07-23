@@ -11,7 +11,7 @@ Object-oriented rest framework based on starlette, marshmallow and apispec.
 ## Installation
 
 ```console
-$ pip install start_resty
+$ pip install star_resty
 ```
 
 ## Example
