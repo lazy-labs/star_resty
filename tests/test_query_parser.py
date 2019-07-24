@@ -11,6 +11,8 @@ from star_resty.parsers.query import parse_query_params
 class QuerySchema(Schema):
     limit = fields.Integer(required=True)
     item_id = fields.List(fields.Integer())
+    a = fields.String(data_key='b')
+    n = fields.Constant(1)
 
 
 def test_parse_query_args_raise_validation_error():
@@ -22,6 +24,8 @@ def test_parse_query_args_raise_validation_error():
 
 def test_parse_query_args():
     request = MagicMock(spec=Request)
-    request.query_params = QueryParams([('item_id', '1'), ('item_id', '2'), ('limit', '1000')])
+    request.query_params = QueryParams([
+        ('item_id', '1'), ('item_id', '2'), ('limit', '1000'),
+        ('b', '2'), ('n', '100')])
     params = parse_query_params(request, QuerySchema())
-    assert params == {'limit': 1000, 'item_id': [1, 2]}
+    assert params == {'limit': 1000, 'item_id': [1, 2], 'a': '2', 'n': 1}

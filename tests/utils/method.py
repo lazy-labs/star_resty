@@ -1,7 +1,6 @@
 from marshmallow import Schema, fields
 
-from star_resty import Operation
-from star_resty.types import Method, json_payload, path, query
+from star_resty import Method, Operation, json_payload, path, query
 
 
 class PathParams(Schema):

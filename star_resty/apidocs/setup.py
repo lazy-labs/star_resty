@@ -10,8 +10,9 @@ from starlette.requests import Request
 from starlette.responses import UJSONResponse
 from starlette.routing import Route
 
-from star_resty.types import Method
-from star_resty.types.method import MethodMetaOptions, RequestParser
+from star_resty.method import Method
+from star_resty.method.meta import MethodMetaOptions
+from star_resty.method.request_parser import RequestParser
 from .utils import resolve_schema_name
 
 logger = logging.getLogger(__name__)

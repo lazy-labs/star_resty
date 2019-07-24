@@ -2,13 +2,13 @@ import json
 
 import pytest
 from asynctest import mock
-from marshmallow import ValidationError
-from starlette.applications import Starlette
+from marshmallow import Schema, fields
 from starlette.requests import Request
-from starlette.responses import Response, JSONResponse
-from starlette.testclient import TestClient
+from starlette.responses import Response
 
-from .utils.method import CreateUser, SearchUser
+from star_resty import Method
+from star_resty.exceptions import StartRestDumpError
+from .utils.method import CreateUser
 
 
 @pytest.mark.asyncio
@@ -29,27 +29,18 @@ async def test_create_user():
     assert user == {'name': 'Name', 'email': 'email@mail.com', 'id': 1}
 
 
-def test_search_user():
-    app = Starlette()
+@pytest.mark.asyncio
+async def test_raise_dump_error():
+    class ResponseSchema(Schema):
+        id = fields.Integer()
 
-    app.add_route('/users/{id}', SearchUser.as_endpoint(), methods=['GET'])
+    class TestMethod(Method):
+        response_schema = ResponseSchema
 
-    client = TestClient(app)
-    resp = client.get('/users/1?q=Test')
-    assert resp.status_code == 200
-    body = resp.json()
-    assert body == {'id': 1, 'q': 'Test'}
+        async def execute(self):
+            return {'id': 'test'}
 
-
-def test_search_user_invalid_args():
-    app = Starlette()
-
-    app.add_route('/users/{id}', SearchUser.as_endpoint(), methods=['GET'])
-
-    @app.exception_handler(ValidationError)
-    async def error(request, exc: ValidationError):
-        return JSONResponse({'success': False, 'result': {'message': exc.normalized_messages()}}, status_code=400)
-
-    client = TestClient(app)
-    resp = client.get('/users/invalid?q=Test')
-    assert resp.status_code == 400
+    request = mock.MagicMock(spec_set=Request)
+    endpoint = TestMethod.as_endpoint()
+    with pytest.raises(StartRestDumpError):
+        await endpoint(request)
