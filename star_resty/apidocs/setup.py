@@ -25,6 +25,7 @@ def setup_spec(app: Starlette, title: str,
                schemes=None,
                base_path='/',
                route: str = '/apidocs.json',
+               add_head_methods: bool = False,
                **kwargs):
     spec = APISpec(
         title=title,
@@ -42,7 +43,9 @@ def setup_spec(app: Starlette, title: str,
         nonlocal spec
         if not initialized:
             logger.info('initialize open api schema')
-            setup_paths(app, spec, version=get_open_api_version(openapi_version))
+            setup_paths(app, spec,
+                        version=get_open_api_version(openapi_version),
+                        add_head_methods=add_head_methods)
             initialized = True
 
         return UJSONResponse(spec.to_dict())
@@ -53,7 +56,8 @@ def get_open_api_version(openapi_version: str) -> int:
     return int(v)
 
 
-def setup_paths(app: Starlette, spec: APISpec, version: int = 2):
+def setup_paths(app: Starlette, spec: APISpec, version: int = 2,
+                add_head_methods: bool = False):
     routes: Sequence[Route] = app.routes
     for route in routes:
         if not route.include_in_schema:
@@ -63,14 +67,17 @@ def setup_paths(app: Starlette, spec: APISpec, version: int = 2):
         if endpoint is None:
             continue
 
-        operations = setup_operations(route, endpoint, version=version)
+        operations = setup_operations(route, endpoint, version=version,
+                                      add_head_methods=add_head_methods)
         spec.path(convert_path(route.path), operations=operations)
 
 
-def setup_operations(route: Route, endpoint: Method, version: int = 2):
+def setup_operations(route: Route, endpoint: Method, version: int = 2,
+                     add_head_methods: bool = False):
     operation = setup_operation(endpoint, version=version)
     operation = {key: val for key, val in operation.items() if val is not None}
-    return {method.lower(): operation for method in route.methods}
+    return {method.lower(): operation for method in route.methods
+            if (method != 'HEAD' or add_head_methods)}
 
 
 def setup_operation(endpoint: Method, version=2):
