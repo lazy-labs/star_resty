@@ -8,7 +8,7 @@ from apispec.ext.marshmallow import MarshmallowPlugin
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import UJSONResponse
-from starlette.routing import Route
+from starlette.routing import Mount, Route
 
 from star_resty.method import Method
 from star_resty.method.meta import MethodMetaOptions
@@ -59,9 +59,19 @@ def get_open_api_version(openapi_version: str) -> int:
 
 def setup_paths(app: Starlette, spec: APISpec, version: int = 2,
                 add_head_methods: bool = False):
-    routes: Sequence[Route] = app.routes
+    setup_routes(app.routes, spec, version, add_head_methods)
+
+
+def setup_routes(routes: Sequence[Union[Route, Mount]],
+                 spec: APISpec, version: int = 2,
+                 add_head_methods: bool = False,
+                 path: str = ''):
     for route in routes:
-        if not route.include_in_schema:
+        if isinstance(route, Mount):
+            setup_routes(route.routes, spec, version=version, add_head_methods=add_head_methods,
+                         path=f'{path}{route.path}')
+            continue
+        elif isinstance(route, Route) and not route.include_in_schema:
             continue
 
         endpoint: Optional[Method] = getattr(route.endpoint, '__endpoint__', None)
@@ -70,7 +80,8 @@ def setup_paths(app: Starlette, spec: APISpec, version: int = 2,
 
         operations = setup_operations(route, endpoint, version=version,
                                       add_head_methods=add_head_methods)
-        spec.path(convert_path(route.path), operations=operations)
+        route_path = f'{path}{route.path}'
+        spec.path(convert_path(route_path), operations=operations)
 
 
 def setup_operations(route: Route, endpoint: Method, version: int = 2,
