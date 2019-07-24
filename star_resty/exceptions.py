@@ -7,7 +7,7 @@ class StarRestError(Exception):
     pass
 
 
-class StartRestDumpError(StarRestError):
+class DumpError(StarRestError):
 
     def __init__(self, exc: Optional[Exception] = None, *args):
         super().__init__(*args)

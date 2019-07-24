@@ -6,7 +6,7 @@ from marshmallow import Schema
 from marshmallow.exceptions import MarshmallowError
 from starlette.responses import Response
 
-from star_resty.exceptions import StartRestDumpError
+from star_resty.exceptions import DumpError
 from star_resty.types.parser import Parser
 from .options import MethodMetaOptions
 from .request_parser import RequestParser
@@ -44,7 +44,7 @@ class MethodMeta(abc.ABCMeta):
             try:
                 return response_schema.dump(content)
             except MarshmallowError as e:
-                raise StartRestDumpError(e) from e
+                raise DumpError(e) from e
 
         return dump
 

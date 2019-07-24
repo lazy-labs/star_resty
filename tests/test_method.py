@@ -7,7 +7,7 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from star_resty import Method
-from star_resty.exceptions import StartRestDumpError
+from star_resty.exceptions import DumpError
 from .utils.method import CreateUser
 
 
@@ -42,5 +42,5 @@ async def test_raise_dump_error():
 
     request = mock.MagicMock(spec_set=Request)
     endpoint = TestMethod.as_endpoint()
-    with pytest.raises(StartRestDumpError):
+    with pytest.raises(DumpError):
         await endpoint(request)

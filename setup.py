@@ -29,7 +29,7 @@ setup(
         "starlette<=1",
         "apispec<3",
     ],
-    version="0.0.4",
+    version="0.0.5",
     url="https://github.com/slv0/start_resty",
     license="BSD",
     description="The web framework",
