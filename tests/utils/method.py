@@ -27,6 +27,25 @@ class SearchUserResponse(Schema):
     q = fields.String()
 
 
+class ItemsModel(Schema):
+    class Item(Schema):
+        id = fields.Integer()
+
+    items = fields.List(fields.Nested(Item))
+    success = fields.Bool(missing=True)
+
+
+class GetItemsEcho(Method):
+    class Input(Schema):
+        id = fields.List(fields.Integer())
+
+    meta = Operation(tag='items', description='get items')
+    response_schema = ItemsModel
+
+    async def execute(self, items: query(Input)):
+        return {'items': [{'id': item_id} for item_id in items['id']]}
+
+
 class CreateUser(Method):
     meta = Operation(tag='users', description='create user')
     response_schema = CreateUserResponse

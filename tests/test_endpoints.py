@@ -3,7 +3,7 @@ from starlette.applications import Starlette
 from starlette.responses import JSONResponse
 from starlette.testclient import TestClient
 
-from tests.utils.method import SearchUser
+from tests.utils.method import SearchUser, GetItemsEcho
 
 
 def test_search_user():
@@ -31,3 +31,14 @@ def test_search_user_invalid_args():
     client = TestClient(app)
     resp = client.get('/users/invalid?q=Test')
     assert resp.status_code == 400
+
+
+def test_nested_result():
+    app = Starlette()
+
+    app.add_route('/items', GetItemsEcho.as_endpoint(), methods=['GET'])
+    client = TestClient(app)
+    resp = client.get('/items?id=1&id=2&id=3')
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data == {'items': [{'id': 1}, {'id': 2}, {'id': 3}]}

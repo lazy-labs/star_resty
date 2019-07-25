@@ -3,7 +3,7 @@ from starlette.routing import Mount, Route, Router
 from starlette.testclient import TestClient
 
 from star_resty.apidocs import setup_spec
-from .utils.method import CreateUser, GetUser, SearchUser
+from .utils.method import CreateUser, GetUser, SearchUser, GetItemsEcho
 
 
 def test_generate_api_docs():
@@ -104,3 +104,25 @@ def test_generate_api_docs_for_path():
                 'responses': {
                     '200': {'schema': {'$ref': '#/definitions/tests.utils.method.CreateUserResponse'}},
                     '400': {'description': 'Bad request'}}}}}
+
+
+def test_generate_api_docs_for_nested():
+    app = Starlette()
+
+    setup_spec(app, title='test')
+    app.add_route('/items', GetItemsEcho.as_endpoint(), methods=['GET'])
+
+    client = TestClient(app)
+    resp = client.get('/apidocs.json')
+    assert resp is not None
+    body = resp.json()
+    assert body is not None
+    assert body.get('paths') == {
+        '/items': {
+            'get': {'tags': ['items'], 'description': 'get items', 'produces': ['application/json'], 'parameters': [
+                {'in': 'query', 'name': 'id', 'required': False, 'collectionFormat': 'multi', 'type': 'array',
+                 'items': {'type': 'integer', 'format': 'int32'}}],
+                    'responses': {'200': {'schema': {'$ref': '#/definitions/tests.utils.method.ItemsModel'}},
+                                  '400': {'description': 'Bad request'}}}
+        }
+    }
