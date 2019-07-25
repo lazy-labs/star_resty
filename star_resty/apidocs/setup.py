@@ -1,6 +1,5 @@
 import inspect
 import logging
-import re
 from typing import Dict, Optional, Sequence, Type, Union
 
 from apispec import APISpec
@@ -13,7 +12,7 @@ from starlette.routing import Mount, Route
 from star_resty.method import Method
 from star_resty.method.meta import MethodMetaOptions
 from star_resty.method.request_parser import RequestParser
-from .utils import resolve_schema_name
+from .utils import convert_path, resolve_schema_name
 
 logger = logging.getLogger(__name__)
 
@@ -52,9 +51,12 @@ def setup_spec(app: Starlette, title: str,
         return UJSONResponse(spec.to_dict())
 
 
-def get_open_api_version(openapi_version: str) -> int:
-    v = openapi_version.split('.', maxsplit=1)[0]
-    return int(v)
+def get_open_api_version(version: str) -> int:
+    v = version.split('.', maxsplit=1)[0]
+    try:
+        return int(v)
+    except (ValueError, TypeError):
+        raise ValueError(f'Invalid open api version: {version}')
 
 
 def setup_paths(app: Starlette, spec: APISpec, version: int = 2,
@@ -187,7 +189,3 @@ def create_error_schema_by_exc(e: Union[Exception, Type[Exception]]) -> Dict:
         schema['schema'] = error_schema
 
     return schema
-
-
-def convert_path(path: str) -> str:
-    return re.sub(r'<([^>]+)>', r'{\1}', path)

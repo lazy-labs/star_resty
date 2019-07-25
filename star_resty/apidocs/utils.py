@@ -1,7 +1,8 @@
 import inspect
+import re
 from typing import Any
 
-__all__ = ('resolve_schema_name',)
+__all__ = ('resolve_schema_name', 'convert_path')
 
 
 def resolve_schema_name(schema: Any) -> str:
@@ -12,3 +13,7 @@ def resolve_schema_name(schema: Any) -> str:
 
     name = f'{cls.__module__}.{cls.__qualname__}'
     return name
+
+
+def convert_path(path: str) -> str:
+    return re.sub(r'{([^:]+).*}', r'{\1}', path)

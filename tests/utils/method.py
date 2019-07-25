@@ -37,6 +37,15 @@ class CreateUser(Method):
         return {'id': user['id'], **payload}
 
 
+class GetUser(Method):
+    meta = Operation(tag='users', description='get user')
+    response_schema = CreateUserResponse
+
+    async def execute(self, user: path(PathParams),
+                      payload: json_payload(BodySchema)):
+        return {'id': 1}
+
+
 class SearchUser(Method):
     mata = Operation(tag='users', description='search user')
     response_schema = SearchUserResponse
