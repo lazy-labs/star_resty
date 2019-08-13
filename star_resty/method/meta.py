@@ -45,6 +45,8 @@ class MethodMeta(abc.ABCMeta):
                 return response_schema.dump(content)
             except MarshmallowError as e:
                 raise DumpError(e) from e
+            except (ValueError, TypeError) as e:
+                raise DumpError(e) from e
 
         return dump
 
