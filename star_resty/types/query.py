@@ -12,13 +12,13 @@ __all__ = ('query', 'query_schema')
 Q = TypeVar('Q')
 
 
-def query_schema(schema: Union[Schema, Type[Schema]], cls: Q,
+def query_schema(schema: Union[Schema, Type[Schema]], cls: Type[Q],
                  unknown=EXCLUDE) -> Q:
     return types.new_class('QueryInputParams', (cls,),
                            exec_body=set_parser(QueryParser.create(schema, unknown=unknown)))
 
 
-def query(schema: Union[Schema, Type[Schema]], unknown=EXCLUDE) -> Type[Mapping]:
+def query(schema: Union[Schema, Type[Schema]], unknown=EXCLUDE) -> Mapping:
     return query_schema(schema, Mapping, unknown=unknown)
 
 

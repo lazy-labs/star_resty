@@ -11,13 +11,13 @@ __all__ = ('path', 'path_schema')
 P = TypeVar('P')
 
 
-def path_schema(schema: Union[Schema, Type[Schema]], cls: P,
+def path_schema(schema: Union[Schema, Type[Schema]], cls: Type[P],
                 unknown=EXCLUDE) -> P:
     return types.new_class('PathInputParams', (cls,),
                            exec_body=set_parser(PathParser.create(schema, unknown=unknown)))
 
 
-def path(schema: Union[Schema, Type[Schema]], unknown=EXCLUDE) -> Type[Mapping]:
+def path(schema: Union[Schema, Type[Schema]], unknown=EXCLUDE) -> Mapping:
     return path_schema(schema, Mapping, unknown=unknown)
 
 
