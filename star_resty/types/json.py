@@ -11,13 +11,13 @@ __all__ = ('json_schema', 'json_payload')
 P = TypeVar('P')
 
 
-def json_schema(schema: Union[Schema, Type[Schema]], cls: Type[P],
+def json_schema(schema: Union[Schema, Type[Schema]], cls: P,
                 unknown: str = EXCLUDE) -> P:
     return types.new_class('QueryInputParams', (cls,),
                            exec_body=set_parser(JsonParser.create(schema, unknown=unknown)))
 
 
-def json_payload(schema: Union[Schema, Type[Schema]], unknown=EXCLUDE) -> Mapping:
+def json_payload(schema: Union[Schema, Type[Schema]], unknown=EXCLUDE) -> Type[Mapping]:
     return json_schema(schema, Mapping, unknown=unknown)
 
 
