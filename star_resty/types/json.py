@@ -1,9 +1,11 @@
 import types
 from typing import Mapping, Type, TypeVar, Union
 
+import ujson
 from marshmallow import EXCLUDE, Schema
 from starlette.requests import Request
 
+from star_resty.exceptions import DecodeError
 from .parser import Parser, set_parser
 
 __all__ = ('json_schema', 'json_payload')
@@ -32,8 +34,13 @@ class JsonParser(Parser):
         return 'application/json'
 
     async def parse(self, request: Request):
-        body = await request.json()
+        body = await request.body()
         if body is None:
-            body = {}
+            data = {}
+        else:
+            try:
+                data = ujson.loads(body)
+            except (TypeError, ValueError) as e:
+                raise DecodeError('Invalid json body') from e
 
-        return self.schema.load(body, unknown=self.unknown)
+        return self.schema.load(data, unknown=self.unknown)

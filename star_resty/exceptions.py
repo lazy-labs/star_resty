@@ -2,6 +2,8 @@ from typing import Dict, Optional
 
 from marshmallow.exceptions import ValidationError
 
+__all__ = ('StarRestError', 'DumpError', 'DecodeError')
+
 
 class StarRestError(Exception):
     pass
@@ -18,3 +20,9 @@ class DumpError(StarRestError):
             return self.orig_exc.normalized_messages()
 
         return {'_schema': 'Error dump content'}
+
+
+class DecodeError(StarRestError):
+
+    def normalized_messages(self) -> Dict:
+        return {'_body': str(self)}

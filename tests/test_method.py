@@ -15,7 +15,7 @@ from .utils.method import CreateUser
 async def test_create_user():
     request = mock.MagicMock(spec_set=Request)
     request.path_params = {'id': 1}
-    request.json.return_value = {'name': 'Name', 'email': 'email@mail.com'}
+    request.body.return_value = json.dumps({'name': 'Name', 'email': 'email@mail.com'}).encode('utf8')
 
     endpoint = CreateUser.as_endpoint()
     resp = await endpoint(request)
