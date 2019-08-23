@@ -1,6 +1,6 @@
 import abc
 from functools import wraps
-from typing import ClassVar, Type, Union
+from typing import ClassVar, Type, Union, Optional
 
 from marshmallow import Schema
 from starlette.requests import Request
@@ -20,6 +20,7 @@ class Method(abc.ABC, metaclass=MethodMeta):
     meta: ClassVar[Operation] = Operation(tag='default')
     serializer: ClassVar[Serializer] = JsonSerializer
     response_schema: ClassVar[Union[Schema, Type[Schema], None]] = None
+    Response: ClassVar[Optional[Type[Schema]]] = None
     status_code: int = 200
 
     def __init__(self, request: Request):

@@ -44,3 +44,25 @@ async def test_raise_dump_error():
     endpoint = TestMethod.as_endpoint()
     with pytest.raises(DumpError):
         await endpoint(request)
+
+
+@pytest.mark.asyncio
+async def test_response_schema_cls():
+    class TestMethod(Method):
+        class Response(Schema):
+            id = fields.Integer()
+
+        async def execute(self):
+            return {'id': 1}
+
+    request = mock.MagicMock(spec_set=Request)
+    endpoint = TestMethod.as_endpoint()
+    resp = await endpoint(request)
+    assert resp is not None
+    assert isinstance(resp, Response)
+    assert resp.status_code == 200
+    assert resp.media_type == 'application/json'
+    body = resp.body
+    assert body is not None
+    user = json.loads(body)
+    assert user == {'id': 1}

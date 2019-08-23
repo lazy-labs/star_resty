@@ -95,15 +95,12 @@ def test_generate_api_docs_for_path():
     assert body is not None
     assert body.get('paths') == {
         '/users/{user_id}': {
-            'post': {
-                'tags': ['users'], 'description': 'get user', 'produces': ['application/json'],
-                'parameters': [
-                    {'in': 'path', 'name': 'id', 'required': True, 'type': 'integer', 'format': 'int32'},
-                    {'in': 'body', 'required': False, 'name': 'body',
-                     'schema': {'$ref': '#/definitions/tests.utils.method.BodySchema'}}],
-                'responses': {
-                    '200': {'schema': {'$ref': '#/definitions/tests.utils.method.CreateUserResponse'}},
-                    '400': {'description': 'Bad request'}}}}}
+            'post': {'tags': ['users'], 'description': 'get user', 'produces': ['application/json'],
+                     'parameters': [
+                         {'in': 'path', 'name': 'id', 'required': True, 'type': 'integer', 'format': 'int32'},
+                         {'in': 'body', 'required': False, 'name': 'body',
+                          'schema': {'$ref': '#/definitions/tests.utils.method.BodySchema'}}],
+                     'responses': {'400': {'description': 'Bad request'}}}}}
 
 
 def test_generate_api_docs_for_nested():

@@ -58,7 +58,9 @@ class CreateUser(Method):
 
 class GetUser(Method):
     meta = Operation(tag='users', description='get user')
-    response_schema = CreateUserResponse
+
+    class Response(CreateUserResponse):
+        pass
 
     async def execute(self, user: path(PathParams),
                       payload: json_payload(BodySchema)):

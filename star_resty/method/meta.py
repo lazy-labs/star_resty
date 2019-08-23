@@ -27,6 +27,9 @@ class MethodMeta(abc.ABCMeta):
     def create_render(mcs, method):
         renders = []
         response_schema = getattr(method, 'response_schema', None)
+        if response_schema is None:
+            response_schema = getattr(method, 'Response', None)
+
         if response_schema is not None:
             if inspect.isclass(response_schema):
                 response_schema = response_schema()
