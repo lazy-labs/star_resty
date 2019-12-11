@@ -103,8 +103,12 @@ def setup_operation(endpoint: Method, version=2):
         'summary': options.summary,
         'produces': [endpoint.serializer.media_type],
         'parameters': resolve_parameters(meta),
-        'responses': resolve_responses(endpoint)
+        'responses': resolve_responses(endpoint),
     }
+
+    if options.security is not None:
+        res['security'] = options.security
+
     if version > 2:
         res['requestBody'] = resolve_request_body(meta)
     else:
