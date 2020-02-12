@@ -1,12 +1,26 @@
-from typing import Any, NamedTuple, Optional, Sequence
+from dataclasses import dataclass
+from typing import Optional, Sequence, Any, Mapping
+
+__all__ = ('Operation',)
 
 
-class Operation(NamedTuple):
+@dataclass(frozen=True)
+class Operation:
     tag: str = 'default'
     description: Optional[str] = None
     summary: Optional[str] = None
     errors: Sequence[Any] = ()
     security: Optional[Sequence] = None
+    meta: Optional[Mapping] = None
 
-    def update(self, **kwargs):
-        return self._replace(**kwargs)
+    @classmethod
+    def create(cls,
+               tag: str = 'default',
+               description: Optional[str] = None,
+               summary: Optional[str] = None,
+               errors: Sequence[Any] = (),
+               security: Optional[Sequence] = None,
+               **kwargs) -> 'Operation':
+        return cls(tag=tag, description=description,
+                   summary=summary, errors=errors,
+                   security=security, meta=kwargs)

@@ -1,14 +1,16 @@
 import json
+from dataclasses import dataclass
+from typing import Mapping, Optional
 
 import pytest
 from asynctest import mock
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, post_load
 from starlette.requests import Request
 from starlette.responses import Response
 
-from star_resty import Method
+from star_resty import Method, path_schema, json_payload
 from star_resty.exceptions import DumpError
-from .utils.method import CreateUser
+from .utils.method import CreateUser, BodySchema
 
 
 @pytest.mark.asyncio
@@ -17,15 +19,7 @@ async def test_create_user():
     request.path_params = {'id': 1}
     request.body.return_value = json.dumps({'name': 'Name', 'email': 'email@mail.com'}).encode('utf8')
 
-    endpoint = CreateUser.as_endpoint()
-    resp = await endpoint(request)
-    assert resp is not None
-    assert isinstance(resp, Response)
-    assert resp.status_code == 201
-    assert resp.media_type == 'application/json'
-    body = resp.body
-    assert body is not None
-    user = json.loads(body)
+    user = await execute(CreateUser, request, status_code=201)
     assert user == {'name': 'Name', 'email': 'email@mail.com', 'id': 1}
 
 
@@ -56,13 +50,50 @@ async def test_response_schema_cls():
             return {'id': 1}
 
     request = mock.MagicMock(spec_set=Request)
-    endpoint = TestMethod.as_endpoint()
+    user = await execute(TestMethod, request)
+    assert user == {'id': 1}
+
+
+@pytest.mark.asyncio
+async def test_parse_dataclass():
+    class PathParams(Schema):
+        group_id = fields.Integer(required=True)
+
+        @post_load()
+        def load(self, data, **_):
+            return data.get('group_id')
+
+    class TestMethod(Method):
+        @dataclass()
+        class Payload:
+            group_id: path_schema(PathParams, int)
+            body: Optional[json_payload(BodySchema)] = None
+
+        class Response(Schema):
+            group_id = fields.Integer()
+            body = fields.Nested(BodySchema)
+
+        async def execute(self, payload: Payload):
+            from dataclasses import asdict
+            return asdict(payload)
+
+    request = mock.MagicMock(spec_set=Request)
+    request.path_params = {'group_id': 1000}
+    request.body.return_value = json.dumps({'name': 'Dataclass', 'email': 'email@mail.com'}).encode('utf8')
+
+    user = await execute(TestMethod, request)
+    assert user == {'body': {'name': 'Dataclass', 'email': 'email@mail.com'}, 'group_id': 1000}
+
+
+async def execute(method, request, status_code: int = 200,
+                  media_type='application/json') -> Mapping:
+    endpoint = method.as_endpoint()
     resp = await endpoint(request)
     assert resp is not None
     assert isinstance(resp, Response)
-    assert resp.status_code == 200
-    assert resp.media_type == 'application/json'
+    assert resp.status_code == status_code
+    assert resp.media_type == media_type
     body = resp.body
     assert body is not None
-    user = json.loads(body)
-    assert user == {'id': 1}
+    data = json.loads(body)
+    return data

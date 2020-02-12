@@ -4,7 +4,7 @@ from typing import Mapping
 
 from marshmallow import EXCLUDE, Schema, fields
 
-from star_resty.types import (json_payload, json_schema, path, path_schema, query, query_schema)
+from star_resty.payload import (json_payload, json_schema, path, path_schema, query, query_schema)
 
 
 class QuerySchema(Schema):

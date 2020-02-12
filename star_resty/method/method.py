@@ -1,6 +1,6 @@
 import abc
 from functools import wraps
-from typing import ClassVar, Type, Union, Optional
+from typing import ClassVar, Type, Union, Optional, Callable, Any
 
 from marshmallow import Schema
 from starlette.requests import Request
@@ -8,14 +8,15 @@ from starlette.responses import Response
 
 from star_resty.operation import Operation
 from star_resty.serializers import JsonSerializer, Serializer
-from .meta import MethodMeta, MethodMetaOptions
+from .meta import MethodMeta
 
 __all__ = ('Method', 'endpoint')
 
 
 class Method(abc.ABC, metaclass=MethodMeta):
     __slots__ = ('request',)
-    __meta__: ClassVar[MethodMetaOptions]
+    __parser__: ClassVar[Callable[[Request], Any]]
+    __render__: ClassVar[Callable[[Any], Response]]
 
     meta: ClassVar[Operation] = Operation(tag='default')
     serializer: ClassVar[Serializer] = JsonSerializer
@@ -31,10 +32,9 @@ class Method(abc.ABC, metaclass=MethodMeta):
         pass
 
     async def dispatch(self) -> Response:
-        meta = self.__meta__
-        params = await meta.parser.parse(self.request)
+        params = await self.__parser__.parse(self.request)
         content = await self.execute(**params)
-        return meta.render(content)
+        return self.__render__(content)
 
     @classmethod
     def as_endpoint(cls):

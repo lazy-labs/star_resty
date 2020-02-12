@@ -1,5 +1,7 @@
 import ujson
 
+__all__ = ('JsonSerializer',)
+
 
 class JsonSerializer:
     media_type = 'application/json'

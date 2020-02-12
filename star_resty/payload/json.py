@@ -8,14 +8,14 @@ from starlette.requests import Request
 from star_resty.exceptions import DecodeError
 from .parser import Parser, set_parser
 
-__all__ = ('json_schema', 'json_payload')
+__all__ = ('json_schema', 'json_payload', 'JsonParser')
 
 P = TypeVar('P')
 
 
 def json_schema(schema: Union[Schema, Type[Schema]], cls: P,
                 unknown: str = EXCLUDE) -> P:
-    return types.new_class('QueryInputParams', (cls,),
+    return types.new_class('JsonInputParams', (cls,),
                            exec_body=set_parser(JsonParser.create(schema, unknown=unknown)))
 
 
@@ -24,6 +24,7 @@ def json_payload(schema: Union[Schema, Type[Schema]], unknown=EXCLUDE) -> Type[M
 
 
 class JsonParser(Parser):
+    __slots__ = ()
 
     @property
     def location(self):

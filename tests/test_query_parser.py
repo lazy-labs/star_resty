@@ -5,7 +5,7 @@ from marshmallow import Schema, ValidationError, fields
 from starlette.datastructures import QueryParams
 from starlette.requests import Request
 
-from star_resty.parsers.query import parse_query_params
+from star_resty.payload.query import QueryParser
 
 
 class QuerySchema(Schema):
@@ -18,8 +18,9 @@ class QuerySchema(Schema):
 def test_parse_query_args_raise_validation_error():
     request = MagicMock(spec=Request)
     request.query_params = QueryParams([('item_id', '1'), ('item_id', '2')])
+    parser = QueryParser.create(QuerySchema)
     with pytest.raises(ValidationError):
-        parse_query_params(request, QuerySchema())
+        parser.parse(request)
 
 
 def test_parse_query_args():
@@ -27,5 +28,6 @@ def test_parse_query_args():
     request.query_params = QueryParams([
         ('item_id', '1'), ('item_id', '2'), ('limit', '1000'),
         ('b', '2'), ('n', '100')])
-    params = parse_query_params(request, QuerySchema())
+    parser = QueryParser.create(QuerySchema)
+    params = parser.parse(request)
     assert params == {'limit': 1000, 'item_id': [1, 2], 'a': '2', 'n': 1}

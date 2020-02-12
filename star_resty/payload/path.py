@@ -6,7 +6,7 @@ from starlette.requests import Request
 
 from .parser import Parser, set_parser
 
-__all__ = ('path', 'path_schema')
+__all__ = ('path', 'path_schema', 'PathParser')
 
 P = TypeVar('P')
 
@@ -22,6 +22,7 @@ def path(schema: Union[Schema, Type[Schema]], unknown=EXCLUDE) -> Type[Mapping]:
 
 
 class PathParser(Parser):
+    __slots__ = ()
 
     @property
     def location(self):

@@ -4,6 +4,7 @@ from typing import Dict, Optional, Type, Union
 
 from marshmallow import EXCLUDE, Schema
 from starlette.requests import Request
+from functools import lru_cache
 
 __all__ = ('Parser', 'set_parser')
 
@@ -13,15 +14,20 @@ class Parser(abc.ABC):
 
     @classmethod
     def create(cls, schema: Union[Schema, Type[Schema]], unknown: str = EXCLUDE):
+        return cls(cls._convert_schema(schema), unknown)
+
+    @staticmethod
+    @lru_cache(maxsize=1024)
+    def _convert_schema(schema: Union[Schema, Type[Schema]]) -> Schema:
         if inspect.isclass(schema):
             if not issubclass(schema, Schema):
                 raise TypeError(f'Invalid schema type: {schema}')
 
-            schema = schema()
+            return schema()
         elif not isinstance(schema, Schema):
             raise TypeError(f'Invalid schema type: {type(schema)}')
 
-        return cls(schema, unknown)
+        return schema
 
     def __init__(self, schema: Schema, unknown=EXCLUDE):
         self.schema = schema
