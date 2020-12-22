@@ -5,7 +5,7 @@ from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
 from starlette.applications import Starlette
 from starlette.requests import Request
-from starlette.responses import UJSONResponse
+from starlette.responses import JSONResponse
 
 from .route import setup_routes
 from .utils import resolve_schema_name
@@ -35,19 +35,19 @@ def setup_spec(app: Starlette, title: str,
         plugins=[MarshmallowPlugin(schema_name_resolver=resolve_schema_name)],
         **{'swagger': openapi_version, 'basePath': base_path, **options, **kwargs}
     )
-    initialized = False
+    api_spec = None
 
     @app.route(route, include_in_schema=False)
     def generate_api_docs(_: Request):
-        nonlocal initialized
+        nonlocal api_spec
         nonlocal spec
-        if not initialized:
+        if api_spec is None:
             logger.info('initialize open api schema')
             setup_routes(app.routes, spec, version=get_open_api_version(openapi_version)
                          , add_head_methods=add_head_methods)
-            initialized = True
+            api_spec = spec.to_dict()
 
-        return UJSONResponse(spec.to_dict())
+        return JSONResponse(api_spec)
 
 
 def get_open_api_version(version: str) -> int:
