@@ -34,7 +34,7 @@ class Method(abc.ABC, metaclass=MethodMeta):
     async def dispatch(self) -> Response:
         params = await self.__parser__.parse(self.request)
         content = await self.execute(**params)
-        return self.__render__(content)
+        return self.__render__(content, self)
 
     @classmethod
     def as_endpoint(cls):
