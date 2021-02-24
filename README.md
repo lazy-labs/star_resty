@@ -59,8 +59,8 @@ class Echo(Method):
     meta = Operation(tag='default',
                      description='echo')
     response_schema = EchoInput
-    self.status_code = 201  # Configurable Respone Http Status Code
     async def execute(self, query_params: query(EchoInput)):
+        self.status_code = 201  # Configurable Respone Http Status Code
         return query_params
 
 
