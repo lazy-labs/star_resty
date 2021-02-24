@@ -22,7 +22,7 @@ from typing import Optional
 
 from marshmallow import Schema, fields, post_load, ValidationError
 from starlette.applications import Starlette
-from starlette.responses import UJSONResponse
+from starlette.responses import JSONResponse
 
 from star_resty import Method, Operation, endpoint, json_schema, query, setup_spec
 
@@ -50,7 +50,7 @@ app = Starlette(debug=True)
 
 @app.exception_handler(ValidationError)
 def register_error(request, e: ValidationError):
-    return UJSONResponse(e.normalized_messages(), status_code=400)
+    return JSONResponse(e.normalized_messages(), status_code=400)
 
 
 @app.route('/echo')
@@ -59,8 +59,8 @@ class Echo(Method):
     meta = Operation(tag='default',
                      description='echo')
     response_schema = EchoInput
-
     async def execute(self, query_params: query(EchoInput)):
+        self.status_code = 201  # Configurable Respone Http Status Code
         return query_params
 
 
