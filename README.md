@@ -7,6 +7,7 @@ Object-oriented rest framework based on starlette, marshmallow and apispec.
 * [Starlette] 0.12.0+
 * [Marshmallow] 3.0.0rc8+
 * [APISpec] 2.0.2+
+* [python-multipart] 0.0.5+
 
 ## Installation
 
@@ -17,33 +18,51 @@ $ pip install star_resty
 ## Example
 
 ```python
-from dataclasses import dataclass
-from typing import Optional
-
-from marshmallow import Schema, fields, post_load, ValidationError
+from marshmallow import Schema, fields, ValidationError, post_load
 from starlette.applications import Starlette
+from starlette.datastructures import UploadFile
 from starlette.responses import JSONResponse
 
-from star_resty import Method, Operation, endpoint, json_schema, query, setup_spec
+from dataclasses import dataclass
 
+from star_resty import Method, Operation, endpoint, json_schema, json_payload, form_payload, query, setup_spec
+from typing import Optional
 
 class EchoInput(Schema):
     a = fields.Int()
 
 
+# Json Payload (by schema)
+class JsonPayloadSchema(Schema):
+    a = fields.Int(required=True)
+    s = fields.String()
+
+
+# Json Payload (by dataclass)
 @dataclass
 class Payload:
     a: int
     s: Optional[str] = None
 
-
-class PayloadSchema(Schema):
-    a = fields.Int(required=True)
-    s = fields.String()
+class JsonPayloadDataclass(Schema):
+    a=fields.Int(required=True)
+    s=fields.Str()
 
     @post_load
     def create_payload(self, data, **kwargs):
         return Payload(**data)
+
+
+# Form Payload
+class FormFile(fields.Field):
+    def _validate(self, value):
+        if not isinstance(value, UploadFile):
+            raise ValidationError('Not a file')
+
+
+class FormPayload(Schema):
+    id = fields.Int(required=True)
+    file = FormFile()
 
 
 app = Starlette(debug=True)
@@ -64,13 +83,32 @@ class Echo(Method):
         return query_params
 
 
-@app.route('/post', methods=['POST'])
+@app.route('/post/schema', methods=['POST'])
 @endpoint
-class Post(Method):
-    meta = Operation(tag='default', description='post')
+class PostSchema(Method):
+    meta = Operation(tag='default', description='post json (by schema)')
 
-    async def execute(self, item: json_schema(PayloadSchema, Payload)):
-        return {'a': item.a * 2, 's': item.s}
+    async def execute(self, item: json_payload(JsonPayloadSchema)):
+        return {'a': item.get('a') * 2, 's': item.get('s')}
+
+
+@app.route('/post/dataclass', methods=['POST'])
+@endpoint
+class PostDataclass(Method):
+    meta = Operation(tag='default', description='post json (by dataclass)')
+
+    async def execute(self, item: json_schema(JsonPayloadDataclass, Payload)):
+        return {'a': item.a * 3, 's': item.s}
+
+@app.route('/form', methods=['POST'])
+@endpoint
+class PostForm(Method):
+    meta = Operation(tag='default', description='post form')
+
+    async def execute(self, form_data: form_payload(FormPayload)):
+        file_name = form_data.get('file').filename
+        id = form_data.get('id')
+        return {'message': f"file {file_name} with id {id} received"}
 
 
 if __name__ == '__main__':

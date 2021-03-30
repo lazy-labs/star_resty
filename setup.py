@@ -28,8 +28,9 @@ setup(
         'marshmallow>=3.0.0rc8,<4',
         'starlette<1',
         'apispec<4',
+        'python-multipart'
     ],
-    version='0.0.14',
+    version='0.0.15',
     url='https://github.com/slv0/start_resty',
     license='BSD',
     description='The web framework',

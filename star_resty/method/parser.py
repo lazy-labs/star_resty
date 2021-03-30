@@ -67,12 +67,11 @@ def create_parser_from_data(data: Mapping) -> RequestParser:
     parsers = []
     async_parsers = []
     for key, value in data.items():
-        if is_dataclass(value):
+        parser = getattr(value, 'parser', None)
+        if parser is None and is_dataclass(value):
             data = {field.name: field.type for field in fields(value)}
             factory = partial(DataClassParser, value)
             parser = create_parser_for_dc(data, factory=factory)
-        else:
-            parser = getattr(value, 'parser', None)
 
         if parser is None or not isinstance(parser, (Parser, RequestParser)):
             continue
