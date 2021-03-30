@@ -17,33 +17,34 @@ $ pip install star_resty
 ## Example
 
 ```python
-from dataclasses import dataclass
-from typing import Optional
-
-from marshmallow import Schema, fields, post_load, ValidationError
+from marshmallow import Schema, fields, ValidationError
 from starlette.applications import Starlette
+from starlette.datastructures import UploadFile
 from starlette.responses import JSONResponse
 
-from star_resty import Method, Operation, endpoint, json_schema, query, setup_spec
+from star_resty import Method, Operation, endpoint, json_payload, form_payload, query, setup_spec
 
 
 class EchoInput(Schema):
     a = fields.Int()
 
 
-@dataclass
-class Payload:
-    a: int
-    s: Optional[str] = None
-
-
-class PayloadSchema(Schema):
+# Json Payload
+class JsonPayloadSchema(Schema):
     a = fields.Int(required=True)
     s = fields.String()
 
-    @post_load
-    def create_payload(self, data, **kwargs):
-        return Payload(**data)
+
+# Form Payload
+class FormFile(fields.Field):
+    def _validate(self, value):
+        if not isinstance(value, UploadFile):
+            raise ValidationError('Not a file')
+
+
+class FormSchema(Schema):
+    id = fields.Int(required=True)
+    file = FormFile()
 
 
 app = Starlette(debug=True)
@@ -67,10 +68,20 @@ class Echo(Method):
 @app.route('/post', methods=['POST'])
 @endpoint
 class Post(Method):
-    meta = Operation(tag='default', description='post')
+    meta = Operation(tag='default', description='post json')
 
-    async def execute(self, item: json_schema(PayloadSchema, Payload)):
-        return {'a': item.a * 2, 's': item.s}
+    async def execute(self, item: json_payload(JsonPayloadSchema)):
+        return {'a': item.get('a') * 2, 's': item.get('s')}
+
+@app.route('/form', methods=['POST'])
+@endpoint
+class PostForm(Method):
+    meta = Operation(tag='default', description='post form')
+
+    async def execute(self, form_data: form_payload(FormSchema)):
+        file_name = form_data.get('file').filename
+        id = form_data.get('id')
+        return {'message': f"file {file_name} with id {id} received"}
 
 
 if __name__ == '__main__':
