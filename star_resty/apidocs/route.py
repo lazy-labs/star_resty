@@ -27,6 +27,6 @@ def setup_routes(routes: Sequence[BaseRoute],
                 continue
 
             operations = setup_route_operations(route, endpoint, version=version,
-                                                add_head_methods=add_head_methods)
+                                                add_head_methods=add_head_methods, spec=spec)
             route_path = f'{path}{route.path}'
             spec.path(convert_path(route_path), operations=operations)

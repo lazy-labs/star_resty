@@ -8,21 +8,21 @@ __all__ = ('setup_route_operations',)
 
 
 def setup_route_operations(route: Route, endpoint: Method, version: int = 2,
-                           add_head_methods: bool = False):
-    operation = setup_operation(endpoint, version=version)
+                           add_head_methods: bool = False, spec = None):
+    operation = setup_operation(endpoint, version=version, spec=spec)
     operation = {key: val for key, val in operation.items() if val is not None}
     return {method.lower(): operation for method in route.methods
             if (method != 'HEAD' or add_head_methods)}
 
 
-def setup_operation(endpoint: Method, version=2):
+def setup_operation(endpoint: Method, version=2, spec = None):
     options = endpoint.meta
     res = {
         'tags': [options.tag],
         'description': options.description,
         'summary': options.summary,
         'produces': [endpoint.serializer.media_type],
-        'parameters': resolve_parameters(endpoint),
+        'parameters': resolve_parameters(endpoint, spec),
         'responses': resolve_responses(endpoint),
     }
 

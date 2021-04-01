@@ -1,6 +1,7 @@
 import abc
 import inspect
 from typing import Dict, Optional, Type, Union
+from apispec import APISpec
 
 from marshmallow import EXCLUDE, Schema
 from starlette.requests import Request
@@ -36,6 +37,13 @@ class Parser(abc.ABC):
     @abc.abstractmethod
     def parse(self, request: Request):
         pass
+
+    def get_spec(self, spec: APISpec = None) -> Dict[str, Union[str, Dict]]:
+        return {'in': self.location, 'schema': self.schema}
+
+    @property
+    def in_body(self) -> bool:
+        return self.location == 'body'
 
     @property
     def location(self) -> Optional[str]:
