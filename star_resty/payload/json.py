@@ -6,7 +6,7 @@ from marshmallow import EXCLUDE, Schema
 from starlette.requests import Request
 
 from star_resty.exceptions import DecodeError
-from .parser import Parser, set_parser
+from .base import SchemaParser, set_parser
 
 __all__ = ('json_schema', 'json_payload', 'JsonParser')
 
@@ -23,7 +23,7 @@ def json_payload(schema: Union[Schema, Type[Schema]], unknown=EXCLUDE) -> Type[M
     return json_schema(schema, Mapping, unknown=unknown)
 
 
-class JsonParser(Parser):
+class JsonParser(SchemaParser):
     __slots__ = ()
 
     @property

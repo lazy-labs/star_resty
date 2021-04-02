@@ -11,8 +11,8 @@ def resolve_parameters(endpoint: Method):
         return parameters
 
     for p in parser:
-        if p.schema is not None and p.location != 'body':
-            parameters.append({'in': p.location, 'schema': p.schema})
+        if not p.is_body:
+            parameters.extend(p.get_spec())
 
     return parameters
 
@@ -30,8 +30,8 @@ def resolve_request_body(endpoint: Method):
 def resolve_request_body_content(parser: RequestParser):
     content = {}
     for p in parser:
-        if p.schema is not None and p.location == 'body' and p.media_type:
-            content[p.media_type] = {'schema': p.schema}
+        if p.is_body:
+            content.update(p.get_body_spec())
 
     return content
 
@@ -43,11 +43,7 @@ def resolve_request_body_params(endpoint: Method):
         return params
 
     for p in parser:
-        if p.schema is not None and p.location == 'body' and p.media_type:
-            params.append({
-                'name': 'body',
-                'in': 'body',
-                'schema': p.schema
-            })
+        if p.is_body:
+            params.extend(p.get_spec())
 
     return params

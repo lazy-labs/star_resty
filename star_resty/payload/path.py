@@ -4,7 +4,7 @@ from typing import Mapping, Type, TypeVar, Union
 from marshmallow import EXCLUDE, Schema
 from starlette.requests import Request
 
-from .parser import Parser, set_parser
+from .base import SchemaParser, set_parser
 
 __all__ = ('path', 'path_schema', 'PathParser')
 
@@ -21,7 +21,7 @@ def path(schema: Union[Schema, Type[Schema]], unknown=EXCLUDE) -> Type[Mapping]:
     return path_schema(schema, Mapping, unknown=unknown)
 
 
-class PathParser(Parser):
+class PathParser(SchemaParser):
     __slots__ = ()
 
     @property

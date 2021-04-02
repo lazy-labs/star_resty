@@ -4,7 +4,7 @@ from typing import Mapping, Type, TypeVar, Union
 from marshmallow import EXCLUDE, Schema
 from starlette.requests import Request
 
-from .parser import Parser, set_parser
+from .base import SchemaParser, set_parser
 
 __all__ = ('header', 'header_schema', 'HeaderParser')
 
@@ -21,7 +21,7 @@ def header(schema: Union[Schema, Type[Schema]], unknown=EXCLUDE) -> Type[Mapping
     return header_schema(schema, Mapping, unknown=unknown)
 
 
-class HeaderParser(Parser):
+class HeaderParser(SchemaParser):
     __slots__ = ()
 
     @property

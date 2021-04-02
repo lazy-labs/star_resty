@@ -1,15 +1,44 @@
 import abc
 import inspect
-from typing import Dict, Optional, Type, Union
+from functools import lru_cache
+from typing import Dict, Optional, Type, Union, Iterable, Mapping, Tuple
 
 from marshmallow import EXCLUDE, Schema
 from starlette.requests import Request
-from functools import lru_cache
 
-__all__ = ('Parser', 'set_parser')
+__all__ = ('Parser', 'SchemaParser', 'set_parser')
 
 
 class Parser(abc.ABC):
+    __slots__ = ()
+
+    @abc.abstractmethod
+    def parse(self, request: Request):
+        raise NotImplementedError
+
+    @staticmethod
+    def get_spec() -> Iterable[Mapping]:
+        return ()
+
+    @staticmethod
+    def get_body_spec() -> Iterable[Tuple[str, Mapping]]:
+        return ()
+
+    @property
+    def location(self) -> Optional[str]:
+        return None
+
+    @property
+    def media_type(self) -> Optional[str]:
+        return None
+
+    @property
+    def is_body(self) -> bool:
+        return self.location == 'body'
+
+
+
+class SchemaParser(Parser, metaclass=abc.ABCMeta):
     __slots__ = ('schema', 'unknown')
 
     @classmethod
@@ -33,17 +62,12 @@ class Parser(abc.ABC):
         self.schema = schema
         self.unknown = unknown
 
-    @abc.abstractmethod
-    def parse(self, request: Request):
-        pass
+    def get_spec(self):
+        yield {'in': self.location, 'schema': self.schema}
 
-    @property
-    def location(self) -> Optional[str]:
-        return None
-
-    @property
-    def media_type(self) -> Optional[str]:
-        return None
+    def get_body_spec(self):
+        if self.media_type:
+            yield self.media_type, {'schema': self.schema}
 
 
 def set_parser(parser: Parser):

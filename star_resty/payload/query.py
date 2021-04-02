@@ -6,7 +6,7 @@ from typing import Mapping, Type, TypeVar, Union, Callable, Sequence, List, Tupl
 from marshmallow import EXCLUDE, Schema, fields
 from starlette.requests import Request
 
-from .parser import Parser, set_parser
+from .base import SchemaParser, set_parser
 
 __all__ = ('query', 'query_schema', 'QueryParser')
 
@@ -23,7 +23,7 @@ def query(schema: Union[Schema, Type[Schema]], unknown=EXCLUDE) -> Type[Mapping]
     return query_schema(schema, Mapping, unknown=unknown)
 
 
-class QueryParser(Parser):
+class QueryParser(SchemaParser):
     __slots__ = ('fields',)
 
     @classmethod
