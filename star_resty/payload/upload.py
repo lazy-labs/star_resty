@@ -1,6 +1,7 @@
 import abc
 from typing import Optional, Any, Sequence, Mapping, Type
 
+from marshmallow import ValidationError
 from starlette.datastructures import UploadFile
 from starlette.requests import Request
 
@@ -52,6 +53,9 @@ class UploadParser(Parser):
 
             if not self.files_names or key in self.files_names:
                 res.append(val)
+
+        if self.required and not res:
+            raise ValidationError(message='Missing required file', field_name='form')
 
         return res
 
