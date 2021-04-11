@@ -6,7 +6,7 @@ from typing import Dict, Tuple, Sequence, Generator, Mapping, Generic, TypeVar, 
 
 from starlette.requests import Request
 
-from star_resty.payload.parser import Parser
+from star_resty.payload.base import Parser
 
 __all__ = ('RequestParser', 'create_parser')
 

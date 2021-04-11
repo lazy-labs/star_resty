@@ -5,7 +5,7 @@ from marshmallow import EXCLUDE, Schema
 from starlette.requests import Request
 
 from star_resty.exceptions import DecodeError
-from .parser import Parser, set_parser
+from .base import SchemaParser, set_parser
 
 __all__ = ('form_schema', 'form_payload', 'FormParser')
 
@@ -22,12 +22,12 @@ def form_payload(schema: Union[Schema, Type[Schema]], unknown=EXCLUDE) -> Type[M
     return form_schema(schema, Mapping, unknown=unknown)
 
 
-class FormParser(Parser):
+class FormParser(SchemaParser):
     __slots__ = ()
 
     @property
     def location(self):
-        return 'body'
+        return 'formData'
 
     @property
     def media_type(self):
@@ -36,7 +36,7 @@ class FormParser(Parser):
     async def parse(self, request: Request):
         try:
             form_data = await request.form()
-            form_data = {} if not form_data else form_data
         except Exception as e:
-                raise DecodeError('Invalid form data: %s' % (str(e))) from e
+            raise DecodeError('Invalid form data: %s' % (str(e))) from e
+
         return self.schema.load(form_data, unknown=self.unknown)
