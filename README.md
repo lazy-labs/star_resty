@@ -22,10 +22,13 @@ from marshmallow import Schema, fields, ValidationError, post_load
 from starlette.applications import Starlette
 from starlette.datastructures import UploadFile
 from starlette.responses import JSONResponse
+from apispec.ext.marshmallow import MarshmallowPlugin
+from apispec import APISpec
 
 from dataclasses import dataclass
+from datetime import datetime
 
-from star_resty import Method, Operation, endpoint, json_schema, json_payload, form_payload, query, setup_spec
+from star_resty import Method, Operation, endpoint, json_schema, json_payload, upload, query, setup_spec, form_payload
 from typing import Optional
 
 class EchoInput(Schema):
@@ -37,6 +40,7 @@ class JsonPayloadSchema(Schema):
     a = fields.Int(required=True)
     s = fields.String()
 
+ma_plugin = MarshmallowPlugin()
 
 # Json Payload (by dataclass)
 @dataclass
@@ -54,15 +58,9 @@ class JsonPayloadDataclass(Schema):
 
 
 # Form Payload
-class FormFile(fields.Field):
-    def _validate(self, value):
-        if not isinstance(value, UploadFile):
-            raise ValidationError('Not a file')
-
-
 class FormPayload(Schema):
     id = fields.Int(required=True)
-    file = FormFile()
+    file_dt = fields.DateTime()
 
 
 app = Starlette(debug=True)
@@ -105,10 +103,15 @@ class PostDataclass(Method):
 class PostForm(Method):
     meta = Operation(tag='default', description='post form')
 
-    async def execute(self, form_data: form_payload(FormPayload)):
-        file_name = form_data.get('file').filename
+    async def execute(self, form_data: form_payload(FormPayload),
+                            files_reqired: upload('selfie', 'doc', required=True),
+                            files_optional: upload('file1', 'file2', 'file3')):
+        files = {}
+        for file in files_reqired + files_optional:
+            body = await file.read()
+            files[file.filename] = f"{body.hex()[:10]}..."
         id = form_data.get('id')
-        return {'message': f"file {file_name} with id {id} received"}
+        return {'message': f"files received (id: {id})", "files": files}
 
 
 if __name__ == '__main__':
