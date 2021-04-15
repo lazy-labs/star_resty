@@ -30,7 +30,7 @@ setup(
         'apispec<4',
         'python-multipart'
     ],
-    version='0.0.17',
+    version='0.0.18',
     url='https://github.com/slv0/start_resty',
     license='BSD',
     description='The web framework',
@@ -39,7 +39,7 @@ setup(
     author='Slava Cheremushkin',
     author_email='slv0.chr@gmail.com',
     packages=get_packages('star_resty'),
-    package_data={'star_resty': ['py.typed']},
+    package_data={'star_resty': ['py.typed'], '': ['*.html']},
     data_files=[('', ['LICENSE'])],
     classifiers=[
         'Development Status :: 3 - Alpha',
