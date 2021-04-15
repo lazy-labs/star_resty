@@ -20,9 +20,9 @@ def setup_spec(app: Starlette, title: str,
                openapi_version='2.0',
                schemes=None,
                base_path='/',
-               route: str = '/apidocs',
+               route: str = '/apidocs.json',
+               route_html: str = '/apidocs',
                add_head_methods: bool = False,
-               render_to_html: bool = True,
                options: Optional[Mapping] = None,
                **kwargs):
     if options is None:
@@ -40,17 +40,22 @@ def setup_spec(app: Starlette, title: str,
 
     @app.route(route, include_in_schema=False)
     def generate_api_docs(_: Request):
+        s = generate_spec(app, get_open_api_version(openapi_version), add_head_methods)
+        return JSONResponse(s)
+
+    @app.route(route_html, include_in_schema=False)
+    def generate_html_api_docs(_: Request):
+        s = generate_spec(app, get_open_api_version(openapi_version), add_head_methods)
+        return HTMLResponse(apispec_json_to_html(s))
+
+    def generate_spec(app: Starlette, open_api_version: int, add_head_methods: bool):
         nonlocal api_spec
         nonlocal spec
         if api_spec is None:
             logger.info('initialize open api schema')
-            setup_routes(app.routes, spec, version=get_open_api_version(openapi_version)
-                         , add_head_methods=add_head_methods)
+            setup_routes(app.routes, spec, version=open_api_version, add_head_methods=add_head_methods)
             api_spec = spec.to_dict()
-        if render_to_html:
-            return HTMLResponse(apispec_json_to_html(api_spec))
-        else:
-            return JSONResponse(api_spec)
+        return api_spec
 
 
 def get_open_api_version(version: str) -> int:

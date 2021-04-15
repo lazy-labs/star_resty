@@ -23,5 +23,6 @@ def convert_path(path: str) -> str:
 
 def apispec_json_to_html(apispec_json: dict) -> str:
     template_path = os.path.join(os.path.dirname(__file__), 'template.html')
-    template = open(template_path, 'r').read()
+    with open(template_path, 'r') as file:
+        template = file.read()
     return template % json.dumps(apispec_json)
