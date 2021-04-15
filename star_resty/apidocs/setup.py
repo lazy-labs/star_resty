@@ -5,10 +5,10 @@ from apispec import APISpec
 from apispec.ext.marshmallow import MarshmallowPlugin
 from starlette.applications import Starlette
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, HTMLResponse
 
 from .route import setup_routes
-from .utils import resolve_schema_name
+from .utils import resolve_schema_name, apispec_json_to_html
 
 logger = logging.getLogger(__name__)
 
@@ -20,8 +20,9 @@ def setup_spec(app: Starlette, title: str,
                openapi_version='2.0',
                schemes=None,
                base_path='/',
-               route: str = '/apidocs.json',
+               route: str = '/apidocs',
                add_head_methods: bool = False,
+               render_to_html: bool = True,
                options: Optional[Mapping] = None,
                **kwargs):
     if options is None:
@@ -46,8 +47,10 @@ def setup_spec(app: Starlette, title: str,
             setup_routes(app.routes, spec, version=get_open_api_version(openapi_version)
                          , add_head_methods=add_head_methods)
             api_spec = spec.to_dict()
-
-        return JSONResponse(api_spec)
+        if render_to_html:
+            return HTMLResponse(apispec_json_to_html(api_spec))
+        else:
+            return JSONResponse(api_spec)
 
 
 def get_open_api_version(version: str) -> int:
