@@ -121,4 +121,4 @@ if __name__ == '__main__':
     uvicorn.run(app, port=8080)
 ```
 
-Open [http://localhost:8080/apidocs.json](http://localhost:8080/apidocs.json) to view generated openapi schema.
+Open [http://localhost:8080/apidocs](http://localhost:8080/apidocs) to view generated openapi schema.
