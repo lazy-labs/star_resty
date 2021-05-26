@@ -23,7 +23,7 @@ def setup_operation(endpoint: Method, version=2):
         'summary': options.summary,
         'produces': [endpoint.serializer.media_type],
         'parameters': resolve_parameters(endpoint),
-        'responses': resolve_responses(endpoint),
+        'responses': resolve_responses(endpoint, version),
     }
 
     if options.security is not None:
