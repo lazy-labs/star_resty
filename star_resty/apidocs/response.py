@@ -6,10 +6,19 @@ from star_resty.method import Method
 __all__ = ('resolve_responses',)
 
 
-def resolve_responses(endpoint: Method):
+def resolve_responses(endpoint: Method, version: int):
     responses = {}
     if endpoint.response_schema:
-        responses[str(endpoint.status_code)] = {
+        if version == 3:
+            responses[str(endpoint.status_code)] = {
+                'content': {
+                    endpoint.serializer.media_type: {
+                        'schema': endpoint.response_schema
+                    }
+                }
+            }
+        else:
+            responses[str(endpoint.status_code)] = {
             'schema': endpoint.response_schema
         }
 
