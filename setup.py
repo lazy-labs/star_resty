@@ -30,7 +30,7 @@ setup(
         'apispec<4',
         'python-multipart'
     ],
-    version='0.0.19',
+    version='0.0.20',
     url='https://github.com/slv0/start_resty',
     license='BSD',
     description='The web framework',
