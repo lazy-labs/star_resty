@@ -57,6 +57,8 @@ def setup_spec(app: Starlette, title: str,
             api_spec = spec.to_dict()
         return api_spec
 
+    return spec
+
 
 def get_open_api_version(version: str) -> int:
     v = version.split('.', maxsplit=1)[0]
